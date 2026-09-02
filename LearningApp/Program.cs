@@ -1,4 +1,11 @@
+using LearningApp.Exceptions;
+
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails(configure => configure.CustomizeProblemDetails = context =>
+{
+    context.ProblemDetails.Extensions.TryAdd("requestId", context.HttpContext.TraceIdentifier);
+});
 
 // Add services to the container.
 
@@ -15,7 +22,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseExceptionHandler();
 app.UseAuthorization();
 
 app.MapControllers();
