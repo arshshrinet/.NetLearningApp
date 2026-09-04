@@ -17,7 +17,7 @@ namespace LearningApp.Controllers
     {
         public static User user = new User(); 
         [HttpPost("Register")]
-        public async Task<ActionResult<User>> Register(UserDto request)
+        public async Task<ActionResult<TokenResponseDto>> Register(UserDto request)
         {
             var user= await authService.RegisterUserAsync(request);
             if (user == null)
@@ -28,13 +28,13 @@ namespace LearningApp.Controllers
         }
 
         [HttpPost("Login")]
-        public async Task<ActionResult<string>> Login(UserDto request)
+        public async Task<ActionResult<TokenResponseDto>> Login(UserDto request)
         {
-            var token = await authService.LoginUserAsync(request);
-            if (token == null) {
+            var result = await authService.LoginUserAsync(request);
+            if (result == null) {
                 return BadRequest("Invalid username or password.");
             }
-            return Ok(token);
+            return Ok(result);
         }
 
         [Authorize]
@@ -50,6 +50,17 @@ namespace LearningApp.Controllers
        public ActionResult AdminOnlyEndPoint()
         {
             return Ok("You have admin role access.");
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<ActionResult<TokenResponseDto>> RefreshToken(RefreshTokenRequestDto refreshTokenRequest)
+        {
+            var result = await authService.RefreshTokensAsync(refreshTokenRequest);
+            if(result is null || result.AccessToken is null || result.RefreshToken is null)
+            {
+                return Unauthorized("Invalid refresh token.");
+            }
+            return Ok(result);
         }
     }
 }
