@@ -22,11 +22,11 @@ builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options => 
+    .AddJwtBearer(options =>
     options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
     {
         ValidateIssuer = true,
-        ValidIssuer= builder.Configuration["AppSettings:issuer"],
+        ValidIssuer = builder.Configuration["AppSettings:issuer"],
         ValidateAudience = true,
         ValidAudience = builder.Configuration["AppSettings:audience"],
         ValidateLifetime = true,

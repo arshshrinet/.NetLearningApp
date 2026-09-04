@@ -14,7 +14,7 @@ namespace LearningApp.Services
     {
         public async Task<User?> RegisterUserAsync(UserDto request)
         {
-            if(await context.Users.AnyAsync(u=>u.UserName == request.UserName))
+            if (await context.Users.AnyAsync(u => u.UserName == request.UserName))
             {
                 return null;
             }
@@ -59,7 +59,7 @@ namespace LearningApp.Services
         public async Task<TokenResponseDto?> RefreshTokensAsync(RefreshTokenRequestDto refreshTokenRequestDto)
         {
             var user = await ValidateRefreshTokenAsync(refreshTokenRequestDto.UserId, refreshTokenRequestDto.RefreshToken);
-            if(user is null)
+            if (user is null)
             {
                 return null;
             }
@@ -78,7 +78,7 @@ namespace LearningApp.Services
         private string GenerateRefreshToken()
         {
             var randomNumber = new byte[32];
-            using var rng=RandomNumberGenerator.Create();
+            using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
         }

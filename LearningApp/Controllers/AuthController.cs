@@ -15,23 +15,24 @@ namespace LearningApp.Controllers
     [ApiController]
     public class AuthController(IAuthService authService) : ControllerBase
     {
-        public static User user = new User(); 
+        public static User user = new User();
         [HttpPost("Register")]
         public async Task<ActionResult<TokenResponseDto>> Register(UserDto request)
         {
-            var user= await authService.RegisterUserAsync(request);
+            var user = await authService.RegisterUserAsync(request);
             if (user == null)
             {
                 return BadRequest("UserName already exist.");
             }
-            return Ok(user); 
+            return Ok(user);
         }
 
         [HttpPost("Login")]
         public async Task<ActionResult<TokenResponseDto>> Login(UserDto request)
         {
             var result = await authService.LoginUserAsync(request);
-            if (result == null) {
+            if (result == null)
+            {
                 return BadRequest("Invalid username or password.");
             }
             return Ok(result);
@@ -47,7 +48,7 @@ namespace LearningApp.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpGet("admin-only")]
-       public ActionResult AdminOnlyEndPoint()
+        public ActionResult AdminOnlyEndPoint()
         {
             return Ok("You have admin role access.");
         }
@@ -56,7 +57,7 @@ namespace LearningApp.Controllers
         public async Task<ActionResult<TokenResponseDto>> RefreshToken(RefreshTokenRequestDto refreshTokenRequest)
         {
             var result = await authService.RefreshTokensAsync(refreshTokenRequest);
-            if(result is null || result.AccessToken is null || result.RefreshToken is null)
+            if (result is null || result.AccessToken is null || result.RefreshToken is null)
             {
                 return Unauthorized("Invalid refresh token.");
             }
