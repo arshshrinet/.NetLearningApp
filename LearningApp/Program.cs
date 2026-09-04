@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -33,6 +34,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]!))
     });
+
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+builder.Host.UseSerilog();
+
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
@@ -47,7 +54,7 @@ if (app.Environment.IsDevelopment())
     });
     app.MapScalarApiReference();
 }
-
+app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
 app.UseExceptionHandler();
 app.UseAuthorization();

@@ -8,6 +8,7 @@ using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using LearningApp.Services;
 using Microsoft.AspNetCore.Authorization;
+using Serilog;
 
 namespace LearningApp.Controllers
 {
@@ -24,6 +25,7 @@ namespace LearningApp.Controllers
             {
                 return BadRequest("UserName already exist.");
             }
+
             return Ok(user);
         }
 
@@ -35,6 +37,7 @@ namespace LearningApp.Controllers
             {
                 return BadRequest("Invalid username or password.");
             }
+            Log.Information($"User Logged In SuccessFully: {result.AccessToken}");
             return Ok(result);
         }
 
