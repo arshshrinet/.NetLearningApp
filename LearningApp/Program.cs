@@ -16,6 +16,7 @@ builder.Services.AddProblemDetails(configure => configure.CustomizeProblemDetail
     context.ProblemDetails.Extensions.TryAdd("requestId", context.HttpContext.TraceIdentifier);
 });
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddDbContext<UserDbContext>(options =>

@@ -43,13 +43,12 @@ namespace LearningApp.Controllers
 
         [Authorize]
         [HttpGet]
-
         public ActionResult AutheticatedUserOnly()
         {
             return Ok("You are authenticated User.");
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admins")]
         [HttpGet("admin-only")]
         public ActionResult AdminOnlyEndPoint()
         {
