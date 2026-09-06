@@ -43,9 +43,9 @@ builder.Services.AddRateLimiter(options =>
     options.AddFixedWindowLimiter("fixed", opt =>
     {
         opt.PermitLimit = 2;
-        opt.QueueLimit = 1;
-        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        opt.Window = TimeSpan.FromSeconds(20);
+        //opt.QueueLimit = 1;
+        //opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.Window = TimeSpan.FromSeconds(10);
     });
     options.OnRejected = async (context, token) =>
     {
@@ -74,8 +74,8 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 app.UseSerilogRequestLogging();
-app.UseRateLimiter();
 app.UseHttpsRedirection();
+app.UseRateLimiter();
 app.UseExceptionHandler();
 app.UseAuthorization();
 
