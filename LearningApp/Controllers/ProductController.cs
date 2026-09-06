@@ -2,6 +2,7 @@
 using LearningApp.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace LearningApp.Controllers
 {
@@ -17,9 +18,12 @@ namespace LearningApp.Controllers
         }
 
         [HttpGet]
+        [EnableRateLimiting("fixed")]
         public async Task<ActionResult<Product>> GetProducts()
         {
+            Console.WriteLine($"Start Time: {DateTime.Now}");
             var result = await productService.GetProductAsync();
+            Console.WriteLine($"End Time: {DateTime.Now}");
             return Ok(result);
         }
 

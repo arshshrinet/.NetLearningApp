@@ -1,13 +1,16 @@
 using LearningApp.Exceptions;
 using LearningApp.Repository;
 using LearningApp.Services;
-using Microsoft.EntityFrameworkCore;
-using Scalar.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using System.Security.Cryptography;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using Scalar.AspNetCore;
 using Serilog;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -24,17 +27,32 @@ builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
+.AddJwtBearer(options =>
+options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
+{
+    ValidateIssuer = true,
+    ValidIssuer = builder.Configuration["AppSettings:issuer"],
+    ValidateAudience = true,
+    ValidAudience = builder.Configuration["AppSettings:audience"],
+    ValidateLifetime = true,
+    ValidateIssuerSigningKey = true,
+    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]!))
+});
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("fixed", opt =>
     {
-        ValidateIssuer = true,
-        ValidIssuer = builder.Configuration["AppSettings:issuer"],
-        ValidateAudience = true,
-        ValidAudience = builder.Configuration["AppSettings:audience"],
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AppSettings:Token"]!))
+        opt.PermitLimit = 2;
+        opt.QueueLimit = 1;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.Window = TimeSpan.FromSeconds(20);
     });
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        await context.HttpContext.Response.WriteAsync("Too many requests. Please try again later.", token);
+    };
+});
 
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -56,6 +74,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 app.UseSerilogRequestLogging();
+app.UseRateLimiter();
 app.UseHttpsRedirection();
 app.UseExceptionHandler();
 app.UseAuthorization();
