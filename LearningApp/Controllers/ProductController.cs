@@ -14,17 +14,19 @@ namespace LearningApp.Controllers
         public async Task<ActionResult<Product>> CreateProduct(Product product)
         {
             var productResponse = await productService.CreateProductAsync(product);
-            return CreatedAtAction(nameof(GetProduct), productResponse);
+            return CreatedAtAction(nameof(GetProduct), new { id = productResponse.Id }, productResponse);
         }
 
         [HttpGet]
         [EnableRateLimiting("fixed")]
         public async Task<ActionResult<Product>> GetProducts()
         {
-            Console.WriteLine($"Start Time: {DateTime.Now}");
-            var result = await productService.GetProductAsync();
-            Console.WriteLine($"End Time: {DateTime.Now}");
-            return Ok(result);
+            var productResponse = await productService.GetProductAsync();
+            if (productResponse.Count == 0)
+            {
+                return NotFound("Product list is Empty.");
+            }
+            return Ok(productResponse);
         }
 
         [HttpGet("{id}")]
@@ -33,7 +35,7 @@ namespace LearningApp.Controllers
             var productResponse = await productService.GetProductByIdAsync(id);
             if (productResponse is null)
             {
-                return BadRequest("Product is not Present.");
+                return NotFound("Product is not Present.");
             }
             return Ok(productResponse);
         }
@@ -49,7 +51,7 @@ namespace LearningApp.Controllers
             return Ok(result);
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<ActionResult<string>> DeleteProduct(Guid Id)
         {
             var result = await productService.DeleteProductByIdAsync(Id);
